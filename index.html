@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>공공조달관리사 실기 모의고사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7fa; --card: #ffffff; --ink: #1f2933; --muted: #616e7c; --line: #dde3ea;
+    --brand: #1d4e89; --brand-soft: #e8f0fa; --ok: #1a7f4b; --ok-soft: #e6f4ec;
+    --warn: #b54708; --warn-soft: #fdf1e7; --bad: #b42318; --bad-soft: #fdeceb;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font-family: "Noto Sans KR", -apple-system, "Malgun Gothic", sans-serif; line-height: 1.65; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+  header.top { background: var(--brand); color: #fff; padding: 28px 16px 24px; }
+  header.top .inner { max-width: 860px; margin: 0 auto; }
+  header.top h1 { margin: 0 0 6px; font-size: 1.5rem; }
+  header.top p { margin: 0; opacity: .85; font-size: .95rem; }
+  header.top a.back { color: #fff; opacity: .85; font-size: .88rem; text-decoration: none; display: inline-block; margin-bottom: 8px; }
+  header.top a.back:hover { text-decoration: underline; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .notice { font-size: .92rem; color: var(--muted); }
+  .notice ul { margin: 8px 0 0; padding-left: 20px; }
+  label.field { display: block; font-weight: 500; margin-bottom: 6px; }
+  input[type=text], textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+         font: inherit; font-size: .97rem; background: #fff; color: var(--ink); }
+  textarea { min-height: 150px; resize: vertical; }
+  input:focus, textarea:focus { outline: 2px solid var(--brand); outline-offset: 1px; border-color: var(--brand); }
+  .section-title { font-size: 1.05rem; font-weight: 700; color: var(--brand); margin: 28px 0 12px; }
+  .q-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 6px; }
+  .q-no { font-weight: 700; color: var(--brand); white-space: nowrap; }
+  .q-title { font-weight: 700; }
+  .tag { font-size: .75rem; padding: 2px 8px; border-radius: 99px; background: var(--brand-soft); color: var(--brand); white-space: nowrap; }
+  .q-text { margin: 4px 0 12px; white-space: pre-wrap; }
+  .meta { font-size: .8rem; color: var(--muted); text-align: right; margin-top: 4px; }
+  .short-part { display: grid; grid-template-columns: 190px 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
+  @media (max-width: 560px) { .short-part { grid-template-columns: 1fr; gap: 4px; } }
+  .choice { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; cursor: pointer; }
+  .choice:hover { background: #f8fafc; }
+  .choice input { margin-top: 5px; }
+  .btn { display: inline-block; border: 0; border-radius: 10px; padding: 14px 28px; font: inherit; font-weight: 700;
+         font-size: 1.05rem; cursor: pointer; background: var(--brand); color: #fff; text-decoration: none; }
+  .btn.secondary { background: #fff; color: var(--brand); border: 1px solid var(--brand); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .center { text-align: center; }
+  .hidden { display: none !important; }
+  .error { background: var(--bad-soft); border: 1px solid #f4c7c3; color: var(--bad); }
+
+  /* 회차 목록 */
+  .exam-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .exam-card { display: block; text-decoration: none; color: inherit; background: var(--card); border: 1px solid var(--line);
+               border-radius: 12px; padding: 18px; transition: border-color .15s, transform .15s; }
+  .exam-card:hover { border-color: var(--brand); transform: translateY(-2px); }
+  .exam-card h3 { margin: 0 0 6px; color: var(--brand); font-size: 1.1rem; }
+  .exam-card p { margin: 0 0 12px; color: var(--muted); font-size: .9rem; }
+  .exam-card .go { font-weight: 700; color: var(--brand); font-size: .9rem; }
+
+  /* 타이머 */
+  .timer { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 1px solid var(--line);
+           padding: 8px 16px; text-align: center; font-weight: 700; color: var(--brand); }
+  .timer.low { color: var(--bad); }
+
+  /* 결과 화면 */
+  .result-hero { text-align: center; padding: 32px 20px; }
+  .result-hero .score { font-size: 3.2rem; font-weight: 700; line-height: 1.1; }
+  .result-hero .score small { font-size: 1.2rem; color: var(--muted); font-weight: 500; }
+  .result-hero .msg { font-size: 1.3rem; font-weight: 700; margin-top: 12px; }
+  .result-hero.pass { background: var(--ok-soft); border-color: #b7e0c8; }
+  .result-hero.pass .msg, .result-hero.pass .score { color: var(--ok); }
+  .result-hero.fail { background: var(--warn-soft); border-color: #f5d0b0; }
+  .result-hero.fail .msg, .result-hero.fail .score { color: var(--warn); }
+  .save-status { font-size: .85rem; color: var(--muted); margin-top: 10px; }
+  table.subj { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  table.subj th, table.subj td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  table.subj td.num, table.subj th.num { text-align: right; }
+  .subj-fail { color: var(--bad); font-weight: 700; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+  .chip { border: 1px solid var(--line); border-radius: 8px; padding: 8px; text-align: center; font-size: .85rem;
+          text-decoration: none; color: inherit; background: #fff; }
+  .chip b { display: block; font-size: 1rem; }
+  .chip.full { background: var(--ok-soft); border-color: #b7e0c8; }
+  .chip.mid { background: var(--warn-soft); border-color: #f5d0b0; }
+  .chip.zero { background: var(--bad-soft); border-color: #f4c7c3; }
+  .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 680px) { .cmp { grid-template-columns: 1fr; } }
+  .box { border-radius: 8px; padding: 12px 14px; font-size: .93rem; white-space: pre-wrap; word-break: keep-all; }
+  .box h4 { margin: 0 0 6px; font-size: .85rem; }
+  .box.mine { background: #f8fafc; border: 1px solid var(--line); }
+  .box.model { background: var(--brand-soft); border: 1px solid #c9dbf2; }
+  .box.exp { background: #fffbea; border: 1px solid #f3e3a1; margin-top: 12px; white-space: normal; }
+  .rubric { list-style: none; padding: 0; margin: 12px 0 0; font-size: .88rem; }
+  .rubric li { padding: 4px 0; border-bottom: 1px dashed var(--line); display: flex; gap: 8px; }
+  .rubric li:last-child { border-bottom: 0; }
+  .rubric .mark { width: 20px; flex: none; font-weight: 700; }
+  .rubric .hit .mark { color: var(--ok); }
+  .rubric .partial .mark { color: var(--warn); }
+  .rubric .miss .mark { color: var(--bad); }
+  .rubric .pt { margin-left: auto; color: var(--muted); white-space: nowrap; }
+  .q-score { margin-left: auto; font-weight: 700; white-space: nowrap; }
+  .empty { color: var(--muted); font-style: italic; }
+  .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+  footer.foot { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 40px; }
+  @media print { header.top, .actions, .timer { display: none; } body { background: #fff; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="inner">
+    <a class="back hidden" id="backLink" href="./">← 회차 목록</a>
+    <h1 id="siteTitle">모의고사</h1>
+    <p id="siteSub"></p>
+  </div>
+</header>
+<div id="timerBar" class="timer hidden"></div>
+<main class="wrap" id="app"><div class="card notice">불러오는 중…</div></main>
+
+<script src="config.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
