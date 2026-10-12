@@ -25,31 +25,33 @@
   const round2 = (n) => Math.round(n * 100) / 100;
 
   /** 비교용 정규화: 공백·쉼표 제거, 소문자화, 전각 % 통일 */
-  const normalize = (s) => convertAmounts(String(s == null ? "" : s)
+  const normalize = (s) => String(s == null ? "" : s)
     .toLowerCase()
-    .replace(/％/g, "%").replace(/[，,]/g, "").replace(/\s+/g, "")
-    .replace(/퍼센트|프로/g, "%"));
+    .replace(/％/g, "%").replace(/[，,]/g, "")
+    .replace(/퍼센트|프로/g, "%")
+    .replace(AMOUNT_RE, amountToDigits)
+    .replace(/\s+/g, "");
 
   /** 금액 표기 통일: "12백만원"·"1억2000만"·"3.5억"·"1천2백만" 처럼 한글 단위가 섞인 숫자를
-   *  아라비아 숫자(예: 12000000)로 바꿔서, 키워드·답안이 표기 방식과 상관없이 일치하도록 한다. */
+   *  아라비아 숫자(예: 12000000)로 바꿔서, 키워드·답안이 표기 방식과 상관없이 일치하도록 한다.
+   *  (공백으로 떨어진 뒤의 숫자는 단위가 붙어 있을 때만 같은 금액으로 이어 붙인다.) */
   const UNIT = { "십": 10, "백": 100, "천": 1000, "만": 1e4, "억": 1e8, "조": 1e12 };
-  function convertAmounts(s) {
-    return s.replace(/\d+(?:\.\d+)?(?:[조억만천백십]\d*(?:\.\d+)?)+/g, (m) => {
-      let total = 0, section = 0, cur = null;
-      const toks = m.match(/\d+(?:\.\d+)?|[조억만천백십]/g);
-      for (const t of toks) {
-        if (/\d/.test(t)) { cur = parseFloat(t); continue; }
-        const u = UNIT[t];
-        if (u < 1e4) { section += (cur == null ? 1 : cur) * u; cur = null; }
-        else {
-          if (cur != null) section += cur;
-          if (section === 0) section = 1;
-          total += section * u; section = 0; cur = null;
-        }
+  const AMOUNT_RE = /\d+(?:\.\d+)?\s*[조억만천백십](?:(?:\s*\d+(?:\.\d+)?)?\s*[조억만천백십])*(?:\d+(?:\.\d+)?(?![\d.]|\s*[조억만천백십]))?/g;
+  function amountToDigits(m) {
+    let total = 0, section = 0, cur = null;
+    const toks = m.match(/\d+(?:\.\d+)?|[조억만천백십]/g);
+    for (const t of toks) {
+      if (/\d/.test(t)) { cur = parseFloat(t); continue; }
+      const u = UNIT[t];
+      if (u < 1e4) { section += (cur == null ? 1 : cur) * u; cur = null; }
+      else {
+        if (cur != null) section += cur;
+        if (section === 0) section = 1;
+        total += section * u; section = 0; cur = null;
       }
-      total += section + (cur == null ? 0 : cur);
-      return String(Math.round(total));
-    });
+    }
+    total += section + (cur == null ? 0 : cur);
+    return String(Math.round(total));
   }
 
   /* ---------- 핵심어 추출 (자동 채점용) ---------- */
