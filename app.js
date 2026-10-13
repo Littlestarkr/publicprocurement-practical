@@ -21,6 +21,18 @@
   function showError(msg) {
     app.innerHTML = `<div class="card error">${msg}</div><div class="center"><a class="btn secondary" href="./">회차 목록으로</a></div>`;
   }
+  function isInAppBrowser() {
+    const ua = navigator.userAgent || "";
+    return /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\//i.test(ua);
+  }
+  function handlePrint() {
+    if (isInAppBrowser()) {
+      alert("카카오톡 등 인앱 브라우저에서는 인쇄/PDF 저장이 동작하지 않을 수 있습니다.\n"
+        + "우측 상단 메뉴(⋮)에서 '다른 브라우저로 열기'를 선택한 뒤 다시 시도해주세요.");
+      return;
+    }
+    window.print();
+  }
   async function loadJson(path) {
     let res;
     try { res = await fetch(path, { cache: "no-cache" }); }
@@ -268,10 +280,11 @@
         ${q.type === "choice" ? "" : `<ul class="rubric">${rub}</ul>`}
         ${q.explanation ? `<div class="box exp"><b>해설</b> ${esc(q.explanation)}</div>` : ""}</div>`;
     });
-    html += `<div class="actions"><button class="btn secondary" type="button" onclick="window.print()">결과 인쇄 / PDF 저장</button>
+    html += `<div class="actions"><button class="btn secondary" type="button" id="printBtn">결과 인쇄 / PDF 저장</button>
       <button class="btn secondary" type="button" id="retryBtn">다시 풀기</button>
       <a class="btn" href="./">다른 회차 선택</a></div>`;
     app.innerHTML = html;
+    $("#printBtn").addEventListener("click", handlePrint);
     $("#retryBtn").addEventListener("click", () => { submitting = false; renderExam(examId); window.scrollTo({ top: 0 }); });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
