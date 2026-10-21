@@ -4,6 +4,8 @@
  * - 회차(examId)마다 시트 탭이 자동 생성되고, 문항 수는 제출 데이터에서 자동 인식합니다.
  *   (회차가 늘어도, 문항 수가 달라도 코드를 고칠 필요가 없습니다)
  * - 기존 제1회 시트(practical-1)의 열 배치와 호환됩니다.
+ * - 응시자가 제출 시 발급받는 "내 결과 코드"로 본인의 과거 응시 기록을 다시 조회할 수 있습니다
+ *   (doGet, JSONP — 응답을 fetch로 읽을 수 없는 Apps Script 웹앱의 CORS 한계를 우회).
  *
  * 설치/갱신
  *  1) 기록을 쌓을 구글시트 > 확장 프로그램 > Apps Script 에 이 코드를 붙여넣고 저장
@@ -13,7 +15,7 @@
  *     (URL이 그대로 유지되므로 config.js 를 고칠 필요가 없습니다)
  *
  * 시트 열 구성
- *  제출일시 | 회차ID | 이름 | 총점 | 합격여부 | Q01~Qn 점수 | Q01~Qn 답안 | 브라우저 | 과목별점수 | 회차명 | 만점 | 득점률(%)
+ *  제출일시 | 회차ID | 이름 | 총점 | 합격여부 | Q01~Qn 점수 | Q01~Qn 답안 | 브라우저 | 과목별점수 | 회차명 | 만점 | 득점률(%) | 응시자코드
  */
 
 function pad_(n) { return ('0' + n).slice(-2); }
@@ -32,7 +34,7 @@ function getSheet_(examId, items) {
     const h = ['제출일시', '회차ID', '이름', '총점', '합격여부'];
     items.forEach(function (it) { h.push('Q' + pad_(it.no) + ' 점수'); });
     items.forEach(function (it) { h.push('Q' + pad_(it.no) + ' 답안'); });
-    h.push('브라우저', '과목별점수', '회차명', '만점', '득점률(%)');
+    h.push('브라우저', '과목별점수', '회차명', '만점', '득점률(%)', '응시자코드');
     sh.getRange(1, 1, 1, h.length).setValues([h]).setFontWeight('bold').setBackground('#e8f0fa');
     sh.setFrozenRows(1);
   }
@@ -42,7 +44,7 @@ function getSheet_(examId, items) {
 /** 이전 버전 시트에 없는 추가 열의 머리글 보강 */
 function ensureExtraHeaders_(sh, n) {
   const base = 5 + n * 2;                     // 브라우저 열 앞까지
-  const extras = ['브라우저', '과목별점수', '회차명', '만점', '득점률(%)'];
+  const extras = ['브라우저', '과목별점수', '회차명', '만점', '득점률(%)', '응시자코드'];
   const cells = sh.getRange(1, base + 1, 1, extras.length);
   const cur = cells.getValues()[0];
   let changed = false;
@@ -70,10 +72,11 @@ function doPost(e) {
     const subj = (d.subjects || []).map(function (s) { return s.name + ' ' + s.score + '/' + s.max; }).join(' | ');
     const max = Number(d.max) || '';
     const pct = d.percent != null ? Number(d.percent) : (max ? Math.round(Number(d.total) / max * 1000) / 10 : '');
+    const code = cleanCode_(d.code);
 
     const row = [new Date(), clean_(d.examId), clean_(d.name) || '(익명)', Number(d.total) || 0,
                  d.pass ? '합격' : '불합격']
-      .concat(scores, answers, [clean_(d.userAgent), clean_(subj), clean_(d.examTitle), max, pct]);
+      .concat(scores, answers, [clean_(d.userAgent), clean_(subj), clean_(d.examTitle), max, pct, code]);
 
     const sh = getSheet_(d.examId, items);
     ensureExtraHeaders_(sh, n);
@@ -88,9 +91,59 @@ function doPost(e) {
   }
 }
 
-/** 접속 확인용 (브라우저로 웹앱 URL을 열면 표시) */
-function doGet() {
-  return ContentService.createTextOutput('모의고사 기록 수집기 작동 중');
+/**
+ * 응시자가 본인의 "내 결과 코드"로 과거 응시 기록을 조회 (JSONP: ?code=...&callback=...)
+ * 파라미터가 없으면 접속 확인용 메시지만 반환한다(기존 동작 유지).
+ */
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  const callback = p.callback;
+  const code = cleanCode_(p.code);
+  if (!code) return respond_({ ok: true, info: '모의고사 기록 수집기 작동 중' }, callback);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const results = [];
+    ss.getSheets().forEach(function (sh) {
+      const values = sh.getDataRange().getValues();
+      if (values.length < 2) return;
+      const header = values[0];
+      const codeCol = header.indexOf('응시자코드');
+      if (codeCol < 0) return;                 // 응시자코드 열이 없는(이전 형식) 시트는 건너뜀
+      const col = {
+        date: header.indexOf('제출일시'), examId: header.indexOf('회차ID'),
+        total: header.indexOf('총점'), pass: header.indexOf('합격여부'),
+        title: header.indexOf('회차명'), max: header.indexOf('만점'), pct: header.indexOf('득점률(%)')
+      };
+      for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (String(row[codeCol]).trim().toUpperCase() !== code) continue;
+        const dt = row[col.date];
+        results.push({
+          examId: row[col.examId], examTitle: row[col.title] || row[col.examId],
+          submittedAt: dt instanceof Date ? dt.toISOString() : String(dt),
+          total: row[col.total], max: row[col.max], percent: row[col.pct],
+          pass: row[col.pass] === '합격'
+        });
+      }
+    });
+    results.sort(function (a, b) { return new Date(b.submittedAt) - new Date(a.submittedAt); });
+    return respond_({ ok: true, results: results }, callback);
+  } catch (err) {
+    return respond_({ ok: false, error: String(err) }, callback);
+  }
+}
+
+function respond_(obj, callback) {
+  const json = JSON.stringify(obj);
+  if (callback && /^[A-Za-z0-9_]+$/.test(callback)) {
+    return ContentService.createTextOutput(callback + '(' + json + ')').setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(json).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** 응시자 코드 정리: 영문 대문자/숫자/하이픈만 허용, 길이 제한 */
+function cleanCode_(v) {
+  return String(v == null ? '' : v).toUpperCase().replace(/[^A-Z0-9\-]/g, '').slice(0, 20);
 }
 
 /** 문자열 정리: 길이 제한 + 수식 주입(=,+,-,@ 시작) 방지 */

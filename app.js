@@ -25,6 +25,53 @@
     const ua = navigator.userAgent || "";
     return /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\//i.test(ua);
   }
+
+  /* ---------- 내 결과 코드 (응시 기록을 본인만 나중에 다시 조회하기 위한 코드) ---------- */
+  const CODE_KEY = "examineeCode";
+  function genCode() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 0/O, 1/I 등 헷갈리는 글자 제외
+    let s = "";
+    for (let i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+    return s.slice(0, 4) + "-" + s.slice(4);
+  }
+  function getMyCode() {
+    try {
+      let c = localStorage.getItem(CODE_KEY);
+      if (!c) { c = genCode(); localStorage.setItem(CODE_KEY, c); }
+      return c;
+    } catch (e) { return genCode(); }
+  }
+  function codeBoxHtml(code) {
+    return `<div class="card notice"><b>내 결과 코드: <span class="code-badge">${esc(code)}</span></b>
+      <button class="btn secondary small" type="button" id="copyCodeBtn" style="margin-left:8px">복사</button>
+      <div style="margin-top:6px">제출 후 회차 목록의 <b>[내 결과 보기]</b>에서 이 코드로 과거 응시 기록을 다시 볼 수 있습니다.
+      이 코드는 이 브라우저에만 저장되므로, 다른 기기에서도 보려면 꼭 메모해두세요. 코드를 잃어버리면 기록을 복구할 수 없습니다.</div></div>`;
+  }
+  function wireCopyCodeBtn(code) {
+    const btn = $("#copyCodeBtn");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(code); btn.textContent = "복사됨"; }
+      catch (e) { btn.textContent = "복사 실패"; }
+      setTimeout(() => { btn.textContent = "복사"; }, 1500);
+    });
+  }
+
+  /** Apps Script 웹앱은 fetch로 응답을 읽을 수 없어(CORS) <script> 태그로 JSONP 호출한다. */
+  function jsonp(url, params) {
+    return new Promise((resolve, reject) => {
+      const cbName = "__cb" + Math.random().toString(36).slice(2);
+      const qs = new URLSearchParams(Object.assign({}, params, { callback: cbName })).toString();
+      const script = document.createElement("script");
+      let done = false;
+      const timer = setTimeout(() => { if (!done) { cleanup(); reject(new Error("시간 초과")); } }, 10000);
+      function cleanup() { done = true; clearTimeout(timer); delete window[cbName]; script.remove(); }
+      window[cbName] = (data) => { cleanup(); resolve(data); };
+      script.onerror = () => { cleanup(); reject(new Error("네트워크 오류")); };
+      script.src = url + (url.includes("?") ? "&" : "?") + qs;
+      document.body.appendChild(script);
+    });
+  }
   function handlePrint() {
     if (isInAppBrowser()) {
       alert("카카오톡 등 인앱 브라우저에서는 인쇄/PDF 저장이 동작하지 않을 수 있습니다.\n"
@@ -53,7 +100,8 @@
       const m = await loadJson("exams/manifest.json");
       const list = (m.exams || []);
       if (!list.length) { app.innerHTML = '<div class="card notice">등록된 회차가 없습니다.</div>'; return; }
-      app.innerHTML = '<div class="exam-list">' + list.map(e =>
+      app.innerHTML = '<div class="center" style="margin-bottom:16px"><a class="btn secondary" href="?myresults=1">내 결과 보기</a></div>' +
+        '<div class="exam-list">' + list.map(e =>
         `<a class="exam-card" href="?exam=${encodeURIComponent(e.id)}">
            <h3>${esc(e.title)}</h3><p>${esc(e.description || "")}</p><span class="go">응시하기 →</span></a>`).join("") + "</div>" +
         `<footer class="foot">${esc(SITE.footer || "")}</footer>`;
@@ -97,7 +145,8 @@
       <li>합격 기준: 총점 ${exam.pass.percent}% 이상${exam.pass.subjectMinPercent ? `, 과목별 ${exam.pass.subjectMinPercent}% 이상` : ""}${exam.timeLimitMin ? ` · 제한시간 ${exam.timeLimitMin}분` : ""}</li>
       <li>작성 중인 답안은 이 브라우저에 임시 저장됩니다. 제출 시 답안과 점수가 출제자에게 기록됩니다.</li></ul></div>
       <div class="card"><label class="field" for="examineeName">이름 또는 닉네임 (선택)</label>
-      <input type="text" id="examineeName" maxlength="30" placeholder="예: 조달왕"></div>`;
+      <input type="text" id="examineeName" maxlength="30" placeholder="예: 조달왕"></div>
+      ${codeBoxHtml(getMyCode())}`;
 
     let prevSection = null;
     exam.questions.forEach(q => {
@@ -141,6 +190,7 @@
     app.addEventListener("change", saveDraft);
     app.addEventListener("click", onExamClick);
     $("#submitBtn").addEventListener("click", () => onSubmit(false));
+    wireCopyCodeBtn(getMyCode());
     loadDraft();
     startTimer();
   }
@@ -255,7 +305,8 @@
       total: result.total, max: result.max, percent: result.percent, pass: result.pass,
       subjects: result.subjects,
       items: result.items.map((it, i) => ({ no: it.no, subject: it.subject, answer: Eng.userAnswerText(exam.questions[i], answers[i]), score: it.score, max: it.max })),
-      userAgent: navigator.userAgent.slice(0, 200)
+      userAgent: navigator.userAgent.slice(0, 200),
+      code: getMyCode()
     });
     clearDraft();
   }
@@ -283,7 +334,8 @@
       <div class="score">${r.total}<small> / ${r.max}점</small></div>
       <div class="msg">${esc(r.pass ? msgs.pass : msgs.fail)}</div>
       ${r.subjFail ? `<div class="notice" style="margin-top:6px">과목별 최소 점수(${exam.pass.subjectMinPercent}%) 미달 과목이 있습니다.</div>` : ""}
-      <div class="save-status" id="saveStatus"></div></div>`;
+      <div class="save-status" id="saveStatus"></div></div>
+      ${codeBoxHtml(getMyCode())}`;
 
     if (r.subjects.length > 1) {
       html += `<div class="card"><b>과목별 점수</b><table class="subj" style="margin-top:10px"><tr><th>과목</th><th class="num">점수</th><th class="num">만점</th><th class="num">득점률</th></tr>` +
@@ -314,10 +366,51 @@
     app.innerHTML = html;
     $("#printBtn").addEventListener("click", handlePrint);
     $("#retryBtn").addEventListener("click", () => { submitting = false; renderExam(examId); window.scrollTo({ top: 0 }); });
+    wireCopyCodeBtn(getMyCode());
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  /* ---------- 4) 내 결과 보기 (코드로 과거 응시 기록 조회) ---------- */
+  async function renderMyResults() {
+    setHeader("내 결과 보기", "코드를 입력하면 과거 응시 기록을 다시 볼 수 있습니다.", true);
+    const saved = getMyCode();
+    app.innerHTML = `<div class="card notice">모의고사를 제출하면 화면에 <b>내 결과 코드</b>가 표시됩니다. 그 코드를 입력하면 그 코드로 제출했던
+      과거 응시 기록(회차·점수·합격 여부)을 다시 볼 수 있습니다. 코드는 이 브라우저에 저장되어 있어 아래 칸에 자동으로 채워져 있으며,
+      다른 기기에서 보려면 코드를 직접 입력하세요.</div>
+      <div class="card"><label class="field" for="codeInput">내 결과 코드</label>
+      <input type="text" id="codeInput" value="${esc(saved)}" placeholder="예: AB3X-9K2P">
+      <div class="center" style="margin-top:12px"><button class="btn" id="lookupBtn" type="button">조회</button></div></div>
+      <div id="resultsArea"></div>`;
+    $("#lookupBtn").addEventListener("click", doLookup);
+    $("#codeInput").addEventListener("keydown", e => { if (e.key === "Enter") doLookup(); });
+    if (saved) doLookup();
+  }
+
+  async function doLookup() {
+    const code = $("#codeInput").value.trim().toUpperCase();
+    const area = $("#resultsArea");
+    if (!code) { area.innerHTML = '<div class="card notice">코드를 입력하세요.</div>'; return; }
+    if (!SITE.sheetEndpoint) { area.innerHTML = '<div class="card notice">결과 조회 기능이 설정되어 있지 않습니다.</div>'; return; }
+    area.innerHTML = '<div class="card notice">조회 중…</div>';
+    try {
+      const data = await jsonp(SITE.sheetEndpoint, { code });
+      if (!data || !data.ok) { area.innerHTML = `<div class="card error">${esc((data && data.error) || "조회에 실패했습니다.")}</div>`; return; }
+      const rows = data.results || [];
+      if (!rows.length) { area.innerHTML = '<div class="card notice">이 코드로 저장된 응시 기록이 없습니다.</div>'; return; }
+      area.innerHTML = `<div class="card notice">총 ${rows.length}건의 응시 기록</div>` + rows.map(r => `
+        <div class="card"><div class="q-head"><span class="q-title">${esc(r.examTitle || r.examId)}</span>
+          <span class="q-score">${r.total} / ${r.max}점</span></div>
+          <div class="notice">${esc(String(r.submittedAt).replace("T", " ").slice(0, 16))} · ${r.pass ? "합격" : "불합격"} · 득점률 ${r.percent}%</div></div>`
+      ).join("");
+    } catch (e) {
+      area.innerHTML = '<div class="card error">조회에 실패했습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도하세요.</div>';
+    }
+  }
+
   /* ---------- 시작 ---------- */
-  const id = new URLSearchParams(location.search).get("exam");
-  if (id) renderExam(id); else renderList();
+  const params = new URLSearchParams(location.search);
+  const id = params.get("exam");
+  if (params.has("myresults")) renderMyResults();
+  else if (id) renderExam(id);
+  else renderList();
 })();
