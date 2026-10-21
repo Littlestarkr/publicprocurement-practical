@@ -125,6 +125,9 @@
         html += `<textarea id="a${q.no}" data-q="${q.no}" placeholder="답안을 작성하세요."></textarea>
           <div class="meta"><span id="len${q.no}">0</span>자</div>`;
       }
+      html += `<div class="meta" style="text-align:left;margin-top:10px">
+          <button class="btn secondary small" type="button" data-check="${q.no}">이 문제 중간 확인</button></div>
+        <div id="interim${q.no}"></div>`;
       html += "</div>";
     });
     html += `<div class="center" style="margin-top:24px"><p id="unansweredWarn" class="notice hidden"></p>
@@ -133,11 +136,43 @@
 
     app.removeEventListener("input", onInput);
     app.removeEventListener("change", saveDraft);
+    app.removeEventListener("click", onExamClick);
     app.addEventListener("input", onInput);
     app.addEventListener("change", saveDraft);
+    app.addEventListener("click", onExamClick);
     $("#submitBtn").addEventListener("click", () => onSubmit(false));
     loadDraft();
     startTimer();
+  }
+
+  function onExamClick(e) {
+    const btn = e.target.closest("[data-check]");
+    if (btn) onInterimCheck(Number(btn.dataset.check));
+  }
+
+  /** 문항 하나만 바로 채점해 문제 아래에 정답·해설을 표시 (최종 제출과 무관) */
+  function onInterimCheck(no) {
+    const q = exam.questions.find(x => x.no === no);
+    if (!q) return;
+    const answer = collectOneAnswer(q);
+    const it = Eng.gradeQuestion(q, answer, SITE.grading);
+    const box = $("#interim" + no);
+    box.innerHTML = `<div class="interim-box"><div class="q-head"><b>중간 확인 결과</b><span class="q-score">${it.score} / ${it.max}점</span></div>
+      ${reviewBodyHtml(q, answer, it)}</div>`;
+    box.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  /** 내 답안/모범답안 비교 + 채점요소 + 해설 (중간 확인과 최종 결과 화면이 공유) */
+  function reviewBodyHtml(q, answer, it) {
+    const mine = Eng.userAnswerText(q, answer);
+    const empty = Eng.isBlank(q, answer);
+    const rub = (it.detail || []).map(d => `<li class="${d.level === "full" ? "hit" : d.level === "part" ? "partial" : "miss"}">
+      <span class="mark">${d.level === "full" ? "✓" : d.level === "part" ? "△" : "✗"}</span>
+      <span>${esc(d.label)}${d.level === "part" ? " (유사 표현 인정)" : ""}</span><span class="pt">${d.got} / ${d.p}</span></li>`).join("");
+    return `<div class="cmp"><div class="box mine"><h4>내 답안</h4>${empty ? '<span class="empty">(미작성)</span>' : esc(mine)}</div>
+      <div class="box model"><h4>모범 답안</h4>${esc(Eng.modelAnswerText(q))}</div></div>
+      ${q.type === "choice" ? "" : `<ul class="rubric">${rub}</ul>`}
+      ${q.explanation ? `<div class="box exp"><b>해설</b> ${esc(q.explanation)}</div>` : ""}`;
   }
 
   function onInput(e) {
@@ -146,15 +181,16 @@
   }
 
   /* ---------- 답안 수집 / 임시저장 ---------- */
+  function collectOneAnswer(q) {
+    if (q.type === "short") return q.parts.map((_, j) => $(`#a${q.no}_${j}`).value.trim());
+    if (q.type === "choice") {
+      const v = [...document.querySelectorAll(`input[name="a${q.no}"]:checked`)].map(i => Number(i.value));
+      return Array.isArray(q.answer) && q.answer.length > 1 ? v : (v[0] != null ? v[0] : null);
+    }
+    return $(`#a${q.no}`).value.trim();
+  }
   function collectAnswers() {
-    return exam.questions.map(q => {
-      if (q.type === "short") return q.parts.map((_, j) => $(`#a${q.no}_${j}`).value.trim());
-      if (q.type === "choice") {
-        const v = [...document.querySelectorAll(`input[name="a${q.no}"]:checked`)].map(i => Number(i.value));
-        return Array.isArray(q.answer) && q.answer.length > 1 ? v : (v[0] != null ? v[0] : null);
-      }
-      return $(`#a${q.no}`).value.trim();
-    });
+    return exam.questions.map(collectOneAnswer);
   }
   function saveDraft() {
     try { localStorage.setItem(DRAFT(), JSON.stringify({ name: $("#examineeName").value, answers: collectAnswers() })); } catch (e) {}
@@ -267,18 +303,10 @@
     html += '<div class="section-title">문항별 정답 비교 및 해설</div>';
     exam.questions.forEach((q, i) => {
       const it = r.items[i];
-      const mine = Eng.userAnswerText(q, answers[i]);
-      const empty = Eng.isBlank(q, answers[i]);
-      const rub = it.detail.map(d => `<li class="${d.level === "full" ? "hit" : d.level === "part" ? "partial" : "miss"}">
-        <span class="mark">${d.level === "full" ? "✓" : d.level === "part" ? "△" : "✗"}</span>
-        <span>${esc(d.label)}${d.level === "part" ? " (유사 표현 인정)" : ""}</span><span class="pt">${d.got} / ${d.p}</span></li>`).join("");
       html += `<div class="card" id="r${q.no}"><div class="q-head"><span class="q-no">문제 ${String(q.no).padStart(2, "0")}</span>
         ${q.title ? `<span class="q-title">${esc(q.title)}</span>` : ""}<span class="q-score">${it.score} / ${it.max}점</span></div>
         <div class="q-text">${esc(q.question)}</div>
-        <div class="cmp"><div class="box mine"><h4>내 답안</h4>${empty ? '<span class="empty">(미작성)</span>' : esc(mine)}</div>
-        <div class="box model"><h4>모범 답안</h4>${esc(Eng.modelAnswerText(q))}</div></div>
-        ${q.type === "choice" ? "" : `<ul class="rubric">${rub}</ul>`}
-        ${q.explanation ? `<div class="box exp"><b>해설</b> ${esc(q.explanation)}</div>` : ""}</div>`;
+        ${reviewBodyHtml(q, answers[i], it)}</div>`;
     });
     html += `<div class="actions"><button class="btn secondary" type="button" id="printBtn">결과 인쇄 / PDF 저장</button>
       <button class="btn secondary" type="button" id="retryBtn">다시 풀기</button>
