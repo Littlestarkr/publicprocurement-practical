@@ -8,6 +8,9 @@ window.SITE = {
   // 구글 Apps Script 웹앱 URL (README 3단계). 비워 두면 채점만 하고 시트 저장은 건너뜁니다.
   sheetEndpoint: "https://script.google.com/macros/s/AKfycbybKnJ2TtxE4Y8RxfY9zzSJcsuxmHlLY3_Z7784b5ugN98ZmewBvsJJSkUXV9jU7Yb9/exec",
 
+  // 회차 목록 맨 아래 "관리자에게 문의하기" 메일 주소. 비워 두면 문의 링크가 안 보입니다.
+  adminEmail: "happyojh@gmail.com",
+
   // 합격/불합격 멘트
   messages: {
     pass: "모의고사 합격을 축하합니다.",
