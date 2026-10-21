@@ -72,6 +72,30 @@
       document.body.appendChild(script);
     });
   }
+
+  /* ---------- 이 기기(브라우저)에 바로 남는 응시 기록 (네트워크 불필요) ---------- */
+  const LOCAL_RESULTS_KEY = "myResultsLocal";
+  function saveLocalResult(rec) {
+    try {
+      const arr = JSON.parse(localStorage.getItem(LOCAL_RESULTS_KEY) || "[]");
+      arr.unshift(rec);
+      localStorage.setItem(LOCAL_RESULTS_KEY, JSON.stringify(arr.slice(0, 50)));
+    } catch (e) {}
+  }
+  function getLocalResults() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_RESULTS_KEY) || "[]"); }
+    catch (e) { return []; }
+  }
+
+  /** 응시 기록 목록(로컬 저장분과 서버 조회분이 공유) */
+  function resultsListHtml(rows) {
+    if (!rows.length) return '<div class="card notice">기록이 없습니다.</div>';
+    return rows.map(r => `
+      <div class="card"><div class="q-head"><span class="q-title">${esc(r.examTitle || r.examId)}</span>
+        <span class="q-score">${r.total} / ${r.max}점</span></div>
+        <div class="notice">${esc(String(r.submittedAt).replace("T", " ").slice(0, 16))} · ${r.pass ? "합격" : "불합격"} · 득점률 ${r.percent}%</div></div>`
+    ).join("");
+  }
   function handlePrint() {
     if (isInAppBrowser()) {
       alert("카카오톡 등 인앱 브라우저에서는 인쇄/PDF 저장이 동작하지 않을 수 있습니다.\n"
@@ -300,6 +324,11 @@
     submitting = true; stopTimer();
     const result = Eng.gradeExam(exam, answers, SITE.grading);
     renderResult(answers, result);
+    saveLocalResult({
+      examId: exam.id, examTitle: exam.title,
+      total: result.total, max: result.max, percent: result.percent, pass: result.pass,
+      submittedAt: new Date().toISOString()
+    });
     sendToSheet({
       examId: exam.id, examTitle: exam.title, name: $("#examineeName") ? $("#examineeName").value.trim() : (window.__name || ""),
       total: result.total, max: result.max, percent: result.percent, pass: result.pass,
@@ -370,12 +399,17 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  /* ---------- 4) 내 결과 보기 (코드로 과거 응시 기록 조회) ---------- */
+  /* ---------- 4) 내 결과 보기 (이 기기 저장분 + 코드로 과거 응시 기록 조회) ---------- */
   async function renderMyResults() {
-    setHeader("내 결과 보기", "코드를 입력하면 과거 응시 기록을 다시 볼 수 있습니다.", true);
+    setHeader("내 결과 보기", "방금 전 응시한 기록은 바로 아래에, 다른 기기의 기록은 코드로 조회할 수 있습니다.", true);
     const saved = getMyCode();
-    app.innerHTML = `<div class="card notice">모의고사를 제출하면 화면에 <b>내 결과 코드</b>가 표시됩니다. 그 코드를 입력하면 그 코드로 제출했던
-      과거 응시 기록(회차·점수·합격 여부)을 다시 볼 수 있습니다. 코드는 이 브라우저에 저장되어 있어 아래 칸에 자동으로 채워져 있으며,
+    const local = getLocalResults();
+    app.innerHTML = `<div class="section-title">이 기기에 저장된 기록</div>
+      <div class="card notice">이 브라우저에서 제출한 기록이 네트워크 없이 바로 표시됩니다. 다른 기기·브라우저에서는 보이지 않습니다.</div>
+      ${resultsListHtml(local)}
+      <div class="section-title" style="margin-top:28px">코드로 전체 기록 조회</div>
+      <div class="card notice">모의고사를 제출하면 화면에 <b>내 결과 코드</b>가 표시됩니다. 그 코드를 입력하면 그 코드로 제출했던
+      모든 과거 응시 기록을 (다른 기기 포함) 다시 볼 수 있습니다. 코드는 이 브라우저에 저장되어 있어 아래 칸에 자동으로 채워져 있으며,
       다른 기기에서 보려면 코드를 직접 입력하세요.</div>
       <div class="card"><label class="field" for="codeInput">내 결과 코드</label>
       <input type="text" id="codeInput" value="${esc(saved)}" placeholder="예: AB3X-9K2P">
@@ -397,11 +431,7 @@
       if (!data || !data.ok) { area.innerHTML = `<div class="card error">${esc((data && data.error) || "조회에 실패했습니다.")}</div>`; return; }
       const rows = data.results || [];
       if (!rows.length) { area.innerHTML = '<div class="card notice">이 코드로 저장된 응시 기록이 없습니다.</div>'; return; }
-      area.innerHTML = `<div class="card notice">총 ${rows.length}건의 응시 기록</div>` + rows.map(r => `
-        <div class="card"><div class="q-head"><span class="q-title">${esc(r.examTitle || r.examId)}</span>
-          <span class="q-score">${r.total} / ${r.max}점</span></div>
-          <div class="notice">${esc(String(r.submittedAt).replace("T", " ").slice(0, 16))} · ${r.pass ? "합격" : "불합격"} · 득점률 ${r.percent}%</div></div>`
-      ).join("");
+      area.innerHTML = `<div class="card notice">총 ${rows.length}건의 응시 기록</div>` + resultsListHtml(rows);
     } catch (e) {
       area.innerHTML = '<div class="card error">조회에 실패했습니다. 네트워크 상태를 확인하거나 잠시 후 다시 시도하세요.</div>';
     }
