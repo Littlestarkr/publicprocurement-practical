@@ -100,7 +100,28 @@
     if (!SITE.adminEmail) return "";
     const subject = encodeURIComponent("[" + (SITE.title || "모의고사") + "] 문의");
     return `<div style="margin-top:10px">
-      <a href="mailto:${esc(SITE.adminEmail)}?subject=${subject}">📧 관리자에게 문의하기: ${esc(SITE.adminEmail)}</a></div>`;
+      <a id="contactLink" href="mailto:${esc(SITE.adminEmail)}?subject=${subject}">📧 관리자에게 문의하기: ${esc(SITE.adminEmail)}</a></div>`;
+  }
+  /** 네이버 블로그·카카오톡 등 인앱 브라우저는 mailto: 링크가 동작하지 않는 경우가 많아,
+   *  그런 환경에서는 주소를 복사해주고 외부 브라우저로 열도록 안내한다. */
+  function wireContactLink() {
+    const a = $("#contactLink");
+    if (!a || !SITE.adminEmail) return;
+    a.addEventListener("click", (e) => {
+      if (!isInAppBrowser()) return;
+      e.preventDefault();
+      const email = SITE.adminEmail;
+      const tell = (copied) => alert(
+        (copied ? "이메일 주소를 복사했습니다: " : "이메일 주소: ") + email + "\n"
+        + "네이버·카카오톡 등 인앱 브라우저에서는 메일 앱이 바로 열리지 않을 수 있습니다.\n"
+        + "우측 상단 메뉴(⋮ 또는 ···)에서 '다른 브라우저로 열기'를 선택해 다시 시도하시거나, 위 주소로 직접 메일을 보내주세요."
+      );
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).then(() => tell(true)).catch(() => tell(false));
+      } else {
+        tell(false);
+      }
+    });
   }
   function handlePrint() {
     if (isInAppBrowser()) {
@@ -135,6 +156,7 @@
         `<a class="exam-card" href="?exam=${encodeURIComponent(e.id)}">
            <h3>${esc(e.title)}</h3><p>${esc(e.description || "")}</p><span class="go">응시하기 →</span></a>`).join("") + "</div>" +
         `<footer class="foot">${esc(SITE.footer || "")}${contactLinkHtml()}</footer>`;
+      wireContactLink();
     } catch (e) { showError(e.message); }
   }
 
