@@ -212,6 +212,15 @@
     return Object.assign({}, DEFAULT_GRADING, c, { auto: Object.assign({}, DEFAULT_GRADING.auto, c.auto || {}) });
   }
 
+  /* ---------- 단일 문항 채점 (중간 확인용) ---------- */
+  function gradeQuestion(q, answer, gradingCfg) {
+    const cfg = mergeGrading(gradingCfg);
+    const r = q.type === "short" ? gradeShort(q, answer)
+      : q.type === "choice" ? gradeChoice(q, answer)
+      : gradeEssay(q, answer, cfg);
+    return { no: q.no, subject: q.subject, max: q.points, score: r.score, detail: r.detail };
+  }
+
   /* ---------- 전체 채점 ---------- */
   function gradeExam(exam, answers, gradingCfg) {
     const cfg = mergeGrading(gradingCfg);
@@ -255,7 +264,7 @@
     return !String(a || "").trim();
   }
 
-  const api = { DEFAULT_GRADING, normalize, extractTerms, autoRubric, gradeExam, normalizeExam, mergeGrading,
+  const api = { DEFAULT_GRADING, normalize, extractTerms, autoRubric, gradeExam, gradeQuestion, normalizeExam, mergeGrading,
     modelAnswerText, userAnswerText, isBlank, round1 };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.ExamEngine = api;
