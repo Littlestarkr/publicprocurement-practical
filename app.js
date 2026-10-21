@@ -99,8 +99,8 @@
   function contactLinkHtml() {
     if (!SITE.adminEmail) return "";
     const subject = encodeURIComponent("[" + (SITE.title || "모의고사") + "] 문의");
-    return `<div style="margin-top:10px">
-      <a href="mailto:${esc(SITE.adminEmail)}?subject=${subject}">관리자에게 문의하기</a></div>`;
+    return `<div style="margin-top:10px">관리자에게 문의하기:
+      <a href="mailto:${esc(SITE.adminEmail)}?subject=${subject}">📧 ${esc(SITE.adminEmail)}</a></div>`;
   }
   function handlePrint() {
     if (isInAppBrowser()) {
