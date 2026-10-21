@@ -96,6 +96,12 @@
         <div class="notice">${esc(String(r.submittedAt).replace("T", " ").slice(0, 16))} · ${r.pass ? "합격" : "불합격"} · 득점률 ${r.percent}%</div></div>`
     ).join("");
   }
+  function contactLinkHtml() {
+    if (!SITE.adminEmail) return "";
+    const subject = encodeURIComponent("[" + (SITE.title || "모의고사") + "] 문의");
+    return `<div style="margin-top:10px">
+      <a href="mailto:${esc(SITE.adminEmail)}?subject=${subject}">관리자에게 문의하기</a></div>`;
+  }
   function handlePrint() {
     if (isInAppBrowser()) {
       alert("카카오톡 등 인앱 브라우저에서는 인쇄/PDF 저장이 동작하지 않을 수 있습니다.\n"
@@ -128,7 +134,7 @@
         '<div class="exam-list">' + list.map(e =>
         `<a class="exam-card" href="?exam=${encodeURIComponent(e.id)}">
            <h3>${esc(e.title)}</h3><p>${esc(e.description || "")}</p><span class="go">응시하기 →</span></a>`).join("") + "</div>" +
-        `<footer class="foot">${esc(SITE.footer || "")}</footer>`;
+        `<footer class="foot">${esc(SITE.footer || "")}${contactLinkHtml()}</footer>`;
     } catch (e) { showError(e.message); }
   }
 
