@@ -1132,9 +1132,10 @@
       "parts": [
         {
           "label": "리스크 대응 전략 명칭",
-          "answer": "전이 (Transference 또는 Transfer)",
+          "answer": "전이 (Transference 또는 Transfer, 전가)",
           "keys": [
             "전이",
+            "전가",
             "transfer",
             "transference"
           ]
