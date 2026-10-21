@@ -119,14 +119,29 @@
     return seen.size;
   }
 
+  /** 연산기호(×÷+−*)가 숫자 2개 이상과 함께 등장하면 산식(풀이)을 보여준 것으로 본다.
+   *  한국어 산식은 "600,000,000원 × 지수조정률 5%"처럼 기호와 다음 숫자 사이에 단어가
+   *  끼는 경우가 대부분이라 숫자-기호-숫자가 바로 붙어 있는지는 보지 않는다.
+   *  [풀이] 채점요소는 이 증거가 전혀 없으면(=답만 나열) 점수를 주지 않는다 — 문항 라벨을 그대로
+   *  베낀 답안이 우연히 보조 키워드와 겹쳐 부분점수를 받는 것을 막기 위함. */
+  const OP_RE = /[×÷+\-−*]/;
+  function hasCalcWork(text) {
+    const s = String(text || "");
+    if (!OP_RE.test(s)) return false;
+    const nums = s.match(/[0-9][0-9,]*(?:\.[0-9]+)?/g) || [];
+    return nums.length >= 2;
+  }
+
   /* ---------- 서술형 ---------- */
   function gradeEssay(q, text, cfg) {
     const g = cfg;
     const t = normalize(text);
+    const showedWork = hasCalcWork(text);
     const items = (q.rubric && q.rubric.length) ? q.rubric : autoRubric(q.answer, q.points);
     const detail = items.map(item => {
       let rate = 0, level = "miss";
-      if (t.length > 0) {
+      const isProcessItem = /^\[풀이\]/.test(item.label || "");
+      if (t.length > 0 && !(isProcessItem && !showedWork)) {
         const hasExplicit = item.seq || (item.k && item.k.length);
         if (hasExplicit) {
           let strict;
