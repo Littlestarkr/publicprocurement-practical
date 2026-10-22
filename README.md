@@ -121,6 +121,7 @@ Python이 없으면 push 후 Pages 주소에서 확인하거나 VS Code의 *Live
 
 `config.js`의 `grading`:
 - `softMany`, `softManyRate`, `softOneRate` — 유사 표현 인정 개수/비율 (현재 2개 → 70%, 1개 → 30%)
+- `suppFull`, `keyOnlyRate` — 완결성 검사. 핵심 키워드(`k`)가 맞아도 보조 표현(`s`)을 `suppFull`(50%) 미만만 썼으면 만점 대신 `keyOnlyRate`(83%)~100% 사이로 비례 감점합니다. 모범답안이 `s`를 덜 담은 문항은 모범답안 수준을 기준으로 삼아 모범답안은 항상 만점입니다.
 - `auto.*` — rubric 없는 서술형의 자동 채점 기준. `full/mid/low`는 핵심어 포함 비율 경계, `*Rate`는 인정 비율
 
 제1회 데이터로 보정되어 있습니다: 정밀 rubric 사용 시 최초 응시 답안이 76.7점, rubric 없이 자동 채점만 쓰면 약 69점 수준입니다.
