@@ -9,6 +9,8 @@
  *
  * 채점 단계 (서술형)
  *   1) 정확한 핵심 키워드(rubric.k)가 있으면            → 배점 100%
+ *      (단, 보조 표현 rubric.s 가 있는데 suppFull 비율 미만만 쓰였으면
+ *       keyOnlyRate~100% 사이 비례 — 핵심어만 얹은 불완전 답안 방지)
  *   2) 없지만 유사 표현(rubric.s)이 softMany개 이상이면   → softManyRate
  *      1개면                                           → softOneRate
  *   3) rubric이 없으면 모범답안을 문장 단위로 나눠 핵심어 포함 비율로 자동 채점
@@ -18,6 +20,7 @@
 
   const DEFAULT_GRADING = {
     softMany: 2, softManyRate: 0.7, softOneRate: 0.3,
+    suppFull: 0.5, keyOnlyRate: 0.83,
     auto: { full: 0.5, fullRate: 1.0, mid: 0.3, midRate: 0.8, low: 0.15, lowRate: 0.5 }
   };
 
@@ -155,7 +158,23 @@
           } else {                                           // 그룹 AND, 그룹 안은 OR
             strict = item.k.every(group => group.some(kw => t.includes(normalize(kw))));
           }
-          if (strict) { rate = 1; level = "full"; }
+          if (strict) {
+            rate = 1; level = "full";
+            // 완결성 검사: 핵심 키워드 한두 개만 맞고 보조 표현(s)이 거의 없으면 만점 대신 감점한다.
+            // s의 suppFull 비율 이상을 충족하면 만점, 미달이면 keyOnlyRate ~ 1.0 사이에서 비례 부여.
+            if (!item.seq && item.s && item.s.length) {
+              const total = new Set(item.s.map(normalize).filter(Boolean)).size;
+              const sr = total ? softHits(t, item.s) / total : 1;
+              // 보조 표현이 모범답안과 다른 어휘로 적힌 문항이 있어, 모범답안 자신의 충족률을 상한으로 삼는다
+              // (모범답안은 항상 만점)
+              const ref = total ? softHits(normalize(q.answer), item.s) / total : 1;
+              const need = Math.min(g.suppFull, ref);
+              if (sr < need) {
+                rate = g.keyOnlyRate + (1 - g.keyOnlyRate) * (sr / need);
+                level = "part";
+              }
+            }
+          }
           else if (item.seq && Array.isArray(item.s)) {      // 순서 무관 일치 비율
             const found = item.s.filter(grp => grp.some(kw => t.includes(normalize(kw)))).length;
             if (found > 0) { rate = (found / item.s.length) * g.softManyRate; level = "part"; }
