@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>공공조달관리사 실기 암기 100제</title>
+<title>심심풀이 공공조달관리사 실기 100제</title>
 <style>
 :root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--sub:#667085;--line:#e4e7ee;--brand:#2f5bea;--ok:#12a150;--mid:#e08a00;--bad:#d92d20;--gold:#f5b301}
 @media (prefers-color-scheme:dark){:root{--bg:#10131a;--card:#1a1f2b;--ink:#eef1f7;--sub:#9aa4b8;--line:#2b3242;--brand:#6c8cff}}
@@ -11,7 +11,12 @@
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,"Malgun Gothic","Noto Sans KR",sans-serif}
 .wrap{max-width:760px;margin:0 auto;padding:16px}
 header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-h1{font-size:20px;margin:6px 0}
+.hero{align-items:flex-start;background:linear-gradient(135deg,var(--brand),#7a5cff);color:#fff;border-radius:16px;padding:18px 18px 16px}
+.hero .back{color:rgba(255,255,255,.85)}
+.kicker{display:inline-block;font-size:13px;font-weight:700;background:rgba(255,255,255,.2);padding:3px 11px;border-radius:99px;margin-bottom:6px}
+h1{font-size:22px;line-height:1.35;margin:4px 0 6px;font-weight:700}
+h1 em{font-style:normal;font-weight:800;color:#ffe27a}
+.tag{margin:0;font-size:14px;opacity:.95}
 a.back{color:var(--sub);font-size:14px;text-decoration:none}
 .score{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0}
 .score .top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px}
@@ -56,7 +61,7 @@ select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var
 </head>
 <body>
 <div class="wrap">
- <header><h1>📘 공공조달관리사 실기 암기 100제</h1><a class="back" href="../">← 모의고사로</a></header>
+ <header class="hero"><div><div class="kicker">재미없는 공부는 가라! 🙅</div><h1>심심풀이로 풀어보는<br><em>공공조달관리사 실기 테스트 100제</em></h1><p class="tag">100문제 · 1,000점 · <b>600점이면 합격!</b> 게임처럼 풀다 보면 어느새 외워집니다.</p></div><a class="back" href="../">← 모의고사로</a></header>
  <div class="score">
   <div class="top"><span><b class="big" id="tot">0</b> / 1000점 <span class="small">(문제당 10점 · 합격선 600점)</span></span><span class="small" id="cnt">0 / 100 풀이</span></div>
   <div class="bar"><i id="fill"></i><u></u></div>
