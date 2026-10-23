@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>공공조달관리사 실기 암기 100제</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--sub:#667085;--line:#e4e7ee;--brand:#2f5bea;--ok:#12a150;--mid:#e08a00;--bad:#d92d20;--gold:#f5b301}
+@media (prefers-color-scheme:dark){:root{--bg:#10131a;--card:#1a1f2b;--ink:#eef1f7;--sub:#9aa4b8;--line:#2b3242;--brand:#6c8cff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 -apple-system,"Malgun Gothic","Noto Sans KR",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+h1{font-size:20px;margin:6px 0}
+a.back{color:var(--sub);font-size:14px;text-decoration:none}
+.score{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:10px 0}
+.score .top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px}
+.score b.big{font-size:28px}
+.bar{position:relative;height:14px;background:var(--line);border-radius:99px;margin:10px 0 4px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),#7aa2ff);width:0;transition:width .5s}
+.bar u{position:absolute;left:60%;top:0;bottom:0;width:2px;background:var(--gold)}
+.small{font-size:13px;color:var(--sub)}
+.pass{display:none;text-align:center;font-size:26px;font-weight:800;padding:18px;border-radius:14px;margin:10px 0;color:#5b3d00;background:linear-gradient(90deg,#ffe27a,#ffc933,#ffe27a);background-size:200% 100%;animation:sh 2s linear infinite}
+.pass.on{display:block}
+@keyframes sh{to{background-position:-200% 0}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:10px 0}
+.chip{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--line);color:var(--sub);margin-right:6px}
+.q{font-size:18px;font-weight:600;margin:10px 0 14px}
+.part{margin:10px 0}
+.part label{display:block;font-size:14px;color:var(--sub);margin-bottom:4px}
+.part input{width:100%;padding:11px 12px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.part input:focus{outline:2px solid var(--brand);border-color:transparent}
+.part input:disabled{opacity:.8}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button{border:0;border-radius:10px;padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;background:var(--brand);color:#fff}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:default}
+.res{margin-top:14px;padding:14px;border-radius:12px;border:1px solid var(--line)}
+.res.t4{border-color:var(--gold);background:rgba(245,179,1,.12)}
+.res.t3{border-color:var(--ok);background:rgba(18,161,80,.1)}
+.res.t2{border-color:var(--mid);background:rgba(224,138,0,.1)}
+.res.t1{border-color:var(--bad);background:rgba(217,45,32,.08)}
+.res h3{margin:0 0 6px;font-size:18px}
+.pl{margin:4px 0;font-size:15px}.pl .o{color:var(--ok);font-weight:700}.pl .x{color:var(--bad);font-weight:700}
+.tip{margin-top:8px;padding:8px 10px;border-radius:8px;background:var(--bg);font-weight:600}
+.src{margin-top:6px;font-size:12px;color:var(--sub)}
+.warn{color:var(--mid);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:8px}
+.grid button{padding:6px 0;font-size:12px;background:var(--line);color:var(--sub);border-radius:6px}
+.grid button.cur{outline:2px solid var(--brand)}
+.grid button.s4{background:var(--gold);color:#4a3200}.grid button.s3{background:var(--ok);color:#fff}
+.grid button.s2{background:var(--mid);color:#fff}.grid button.s1{background:var(--bad);color:#fff}
+select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.legend{font-size:12px;color:var(--sub);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header><h1>📘 공공조달관리사 실기 암기 100제</h1><a class="back" href="../">← 모의고사로</a></header>
+ <div class="score">
+  <div class="top"><span><b class="big" id="tot">0</b> / 1000점 <span class="small">(문제당 10점 · 합격선 600점)</span></span><span class="small" id="cnt">0 / 100 풀이</span></div>
+  <div class="bar"><i id="fill"></i><u></u></div>
+  <div class="small" id="gap"></div>
+ </div>
+ <div class="pass" id="pass">🎊 축 합격! 🎊<div class="small" style="color:#5b3d00;font-size:14px;font-weight:600">600점을 넘었습니다. 계속 풀어 만점에 도전하세요!</div></div>
+ <div class="card" id="card"></div>
+ <div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+   <b>문제 목록</b>
+   <span><select id="cat"></select> <button class="ghost" id="reset">처음부터 다시</button></span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="legend">🟨 80%↑ 천재 · 🟩 60%↑ 합격권 · 🟧 40~60% 조금만 더 · 🟥 40%↓ 분발 · 회색 미응시</div>
+ </div>
+ <p class="small">※ '자료 미확인' 표시가 붙은 문항은 기존 모의고사 수치로 출처 자료에서 확인되지 않은 항목입니다. 점수는 이 브라우저에만 저장됩니다.</p>
+</div>
+<script src="../engine.js"></script>
+<script>
+(function(){
+const KEY="memo100.v1";
+const $=id=>document.getElementById(id);
+let items=[], state={scores:{},cur:1}, filter="전체", answered=false;
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&s.scores)state=s}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function tier(r){return r>=0.8?4:r>=0.6?3:r>=0.4?2:1}
+const MSG={4:["🏆 천재이십니다!","완벽에 가깝습니다. 이대로만 가면 합격은 확실해요."],
+ 3:["👏 잘하셨어요!","합격권입니다. 암기문구로 한 번 더 굳혀 두세요."],
+ 2:["💪 조금만 더 하면 합격이에요!","거의 다 왔습니다. 틀린 부분만 다시 보면 됩니다."],
+ 1:["🔥 분발하세요!","괜찮아요. 아래 암기문구를 소리 내어 읽고 다시 도전해 보세요."]};
+function visible(){return items.filter(it=>filter==="전체"||it.cat===filter)}
+function toQ(it){return {no:it.id,type:"short",points:10,parts:it.parts}}
+function render(){
+  const total=Object.values(state.scores).reduce((a,b)=>a+b,0), n=Object.keys(state.scores).length;
+  $("tot").textContent=Math.round(total*10)/10; $("cnt").textContent=n+" / "+items.length+" 풀이";
+  $("fill").style.width=Math.min(100,total/10)+"%";
+  $("gap").textContent=total>=600?"합격선 통과! 현재 "+Math.round(total)+"점":"합격까지 "+Math.ceil(600-total)+"점 남았습니다";
+  $("pass").classList.toggle("on",total>=600);
+  $("grid").innerHTML=visible().map(it=>{const s=state.scores[it.id];
+    const c=s==null?"":" s"+tier(s/10);return `<button class="${c}${it.id===state.cur?" cur":""}" data-id="${it.id}">${it.id}</button>`}).join("");
+  [...$("grid").children].forEach(b=>b.onclick=()=>{state.cur=+b.dataset.id;save();showQ()});
+}
+function showQ(){
+  const it=items.find(x=>x.id===state.cur)||items[0]; answered=false;
+  const prev=state.scores[it.id];
+  $("card").innerHTML=`<span class="chip">${it.cat}</span><span class="chip">${it.id}번</span>${prev!=null?`<span class="chip">이전 ${prev}점</span>`:""}
+   <div class="q">${it.q}</div>
+   <div id="inputs">${it.parts.map((p,i)=>`<div class="part"><label>${p.label}</label><input type="text" id="in${i}" autocomplete="off" placeholder="답을 입력하세요"></div>`).join("")}</div>
+   <div class="row"><button id="submit">채점하기</button><button class="ghost" id="skip">건너뛰기</button></div><div id="res"></div>`;
+  const ins=[...document.querySelectorAll("#inputs input")];
+  ins.forEach((el,i)=>el.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();(ins[i+1]&&!answered)?ins[i+1].focus():submit(it)}}));
+  $("submit").onclick=()=>submit(it); $("skip").onclick=()=>next();
+  if(ins[0])ins[0].focus(); render();
+}
+function submit(it){
+  if(answered)return; answered=true;
+  const ans=it.parts.map((_,i)=>$("in"+i).value);
+  const r=ExamEngine.gradeQuestion(toQ(it),ans);
+  state.scores[it.id]=r.score; save();
+  const ratio=r.score/10, t=tier(ratio), m=MSG[t];
+  document.querySelectorAll("#inputs input").forEach(e=>e.disabled=true);
+  $("submit").disabled=true;
+  $("res").innerHTML=`<div class="res t${t}"><h3>${m[0]} <span class="small">${r.score}점 / 10점 (${Math.round(ratio*100)}%)</span></h3><div>${m[1]}</div>
+   <div style="margin-top:8px">${r.detail.map(d=>`<div class="pl"><span class="${d.level==="full"?"o":"x"}">${d.level==="full"?"○":"✕"}</span> ${d.label}</div>`).join("")}</div>
+   <div class="tip">🧠 암기: ${it.tip}</div>
+   <div class="src">출처: ${it.src} ${it.flag==="B"?'<span class="warn">· 자료 미확인(기존 모의고사 수치)</span>':""}</div>
+   <div class="row"><button id="nx">다음 문제 ▶</button><button class="ghost" id="retry">다시 풀기</button></div></div>`;
+  $("nx").onclick=next; $("retry").onclick=showQ; $("nx").focus(); render();
+}
+function next(){
+  const list=visible(); const i=list.findIndex(x=>x.id===state.cur);
+  const rest=list.slice(i+1).concat(list.slice(0,i+1));
+  const nx=rest.find(x=>state.scores[x.id]==null)||list[(i+1)%list.length];
+  state.cur=nx.id; save(); showQ(); window.scrollTo({top:0,behavior:"smooth"});
+}
+fetch("data.json").then(r=>r.json()).then(d=>{
+  const order=[]; d.items.forEach(it=>{if(!order.includes(it.cat))order.push(it.cat)});
+  items=d.items.slice().sort((a,b)=>order.indexOf(a.cat)-order.indexOf(b.cat)||a.id-b.id);
+  load(); if(!items.find(x=>x.id===state.cur))state.cur=items[0].id;
+  $("cat").innerHTML=["전체"].concat(order).map(c=>`<option>${c}</option>`).join("");
+  $("cat").onchange=e=>{filter=e.target.value;const l=visible();if(!l.find(x=>x.id===state.cur))state.cur=l[0].id;showQ()};
+  $("reset").onclick=()=>{if(confirm("점수를 모두 지우고 처음부터 다시 시작할까요?")){state={scores:{},cur:items[0].id};save();showQ()}};
+  showQ();
+}).catch(e=>{$("card").textContent="문제 데이터를 불러오지 못했습니다. ("+e+")"});
+})();
+</script>
+</body>
+</html>
