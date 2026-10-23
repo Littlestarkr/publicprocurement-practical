@@ -53,8 +53,9 @@ button:disabled{opacity:.5;cursor:default}
 .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:8px}
 .grid button{padding:6px 0;font-size:12px;background:var(--line);color:var(--sub);border-radius:6px}
 .grid button.cur{outline:2px solid var(--brand)}
-.grid button.s4{background:var(--gold);color:#4a3200}.grid button.s3{background:var(--ok);color:#fff}
-.grid button.s2{background:var(--mid);color:#fff}.grid button.s1{background:var(--bad);color:#fff}
+.grid button.gg{background:var(--ok);color:#fff}
+.grid button.gy{background:var(--gold);color:#4a3200}
+.grid button.gr{background:var(--bad);color:#fff}
 select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .legend{font-size:12px;color:var(--sub);margin-top:6px}
 </style>
@@ -75,7 +76,7 @@ select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var
    <span><select id="cat"></select> <button class="ghost" id="reset">처음부터 다시</button></span>
   </div>
   <div class="grid" id="grid"></div>
-  <div class="legend">🟨 80%↑ 천재 · 🟩 60%↑ 합격권 · 🟧 40~60% 조금만 더 · 🟥 40%↓ 분발 · 회색 미응시</div>
+  <div class="legend">🟩 70점 이상 · 🟨 40점 이상 70점 미만 · 🟥 40점 미만 · 회색 미응시 (문제별 득점률 기준)</div>
  </div>
  <p class="small">※ '자료 미확인' 표시가 붙은 문항은 기존 모의고사 수치로 출처 자료에서 확인되지 않은 항목입니다. 점수는 이 브라우저에만 저장됩니다.</p>
 </div>
@@ -101,7 +102,7 @@ function render(){
   $("gap").textContent=total>=600?"합격선 통과! 현재 "+Math.round(total)+"점":"합격까지 "+Math.ceil(600-total)+"점 남았습니다";
   $("pass").classList.toggle("on",total>=600);
   $("grid").innerHTML=visible().map(it=>{const s=state.scores[it.id];
-    const c=s==null?"":" s"+tier(s/10);return `<button class="${c}${it.id===state.cur?" cur":""}" data-id="${it.id}">${it.id}</button>`}).join("");
+    const c=s==null?"":(s>=7?" gg":s>=4?" gy":" gr");return `<button class="${c}${it.id===state.cur?" cur":""}" data-id="${it.id}">${it.id}</button>`}).join("");
   [...$("grid").children].forEach(b=>b.onclick=()=>{state.cur=+b.dataset.id;save();showQ()});
 }
 function showQ(){
