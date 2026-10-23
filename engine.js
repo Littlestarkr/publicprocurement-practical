@@ -39,10 +39,10 @@
    *  아라비아 숫자(예: 12000000)로 바꿔서, 키워드·답안이 표기 방식과 상관없이 일치하도록 한다.
    *  (공백으로 떨어진 뒤의 숫자는 단위가 붙어 있을 때만 같은 금액으로 이어 붙인다.) */
   const UNIT = { "십": 10, "백": 100, "천": 1000, "만": 1e4, "억": 1e8, "조": 1e12 };
-  const AMOUNT_RE = /\d+(?:\.\d+)?\s*[조억만천백십](?:(?:\s*\d+(?:\.\d+)?)?\s*[조억만천백십])*(?:\d+(?:\.\d+)?(?![\d.]|\s*[조억만천백십]))?/g;
+  const AMOUNT_RE = /\d+(?:\.\d+)?\s*[억만천백십](?:(?:\s*\d+(?:\.\d+)?)?\s*[억만천백십])*(?:\d+(?:\.\d+)?(?![\d.]|\s*[억만천백십]))?/g;
   function amountToDigits(m) {
     let total = 0, section = 0, cur = null;
-    const toks = m.match(/\d+(?:\.\d+)?|[조억만천백십]/g);
+    const toks = m.match(/\d+(?:\.\d+)?|[억만천백십]/g);
     for (const t of toks) {
       if (/\d/.test(t)) { cur = parseFloat(t); continue; }
       const u = UNIT[t];
@@ -86,11 +86,22 @@
     return out;
   }
 
+  /** 답안에 키워드가 있는지. 숫자만으로 된 키워드("4억"→400000000, "5" 등)는 앞뒤에 다른 숫자가
+   *  붙어 있으면 인정하지 않는다. (예: 정답 4억에 40억·15를 쓴 경우를 걸러냄) */
+  function has(t, n) {
+    if (/^\d+(?:\.\d+)?$/.test(n)) {
+      const tail = n.includes(".") ? "0*(?!\\d)" : "(?!\\d)";          // 소수는 19.5 = 19.5000
+      const re = new RegExp("(?<!\\d)(?<!\\d\\.)" + n.replace(/\./g, "\\.") + tail);
+      return re.test(t);
+    }
+    return t.includes(n);
+  }
+
   /** 핵심어가 답안에 있는지 (어미 변화를 고려해 앞부분 일치도 인정) */
   function termHit(tNorm, term) {
     const n = normalize(term);
     if (!n) return false;
-    if (tNorm.includes(n)) return true;
+    if (has(tNorm, n)) return true;
     if (/[가-힣]/.test(n)) {
       if (n.length >= 3 && tNorm.includes(n.slice(0, -1))) return true;
       if (n.length >= 5 && tNorm.includes(n.slice(0, -2))) return true;
@@ -156,7 +167,7 @@
               pos = i;
             }
           } else {                                           // 그룹 AND, 그룹 안은 OR
-            strict = item.k.every(group => group.some(kw => t.includes(normalize(kw))));
+            strict = item.k.every(group => group.some(kw => has(t, normalize(kw))));
           }
           if (strict) {
             rate = 1; level = "full";
@@ -213,7 +224,7 @@
     const detail = q.parts.map((p, j) => {
       const t = normalize((arr || [])[j]);
       const keys = (p.keys && p.keys.length) ? p.keys : autoKeys(p.answer);
-      const hit = t.length > 0 && keys.some(k => k && t.includes(normalize(k)));
+      const hit = t.length > 0 && keys.some(k => k && has(t, normalize(k)));
       return { label: `${p.label} → ${p.answer}`, p: round1(per), got: hit ? round1(per) : 0, level: hit ? "full" : "miss" };
     });
     const hits = detail.filter(d => d.level === "full").length;
