@@ -135,7 +135,7 @@ function submit(it){
   $("submit").disabled=true;
   $("res").innerHTML=`<div class="res t${t}"><h3>${m[0]} <span class="small">${r.score}점 / 10점 (${Math.round(ratio*100)}%)</span></h3><div>${m[1]}</div>
    <div style="margin-top:8px">${r.detail.map(d=>`<div class="pl"><span class="${d.level==="full"?"o":"x"}">${d.level==="full"?"○":"✕"}</span> ${d.label}</div>`).join("")}</div>
-   <div class="tip">🧠 암기: ${it.tip}</div>
+   <div class="tip">🧠 암기: ${it.tip}</div>${it.note?`<div class="tip" style="font-weight:500">📌 ${it.note}</div>`:""}
    <div class="src">출처: ${it.src} ${it.flag==="B"?'<span class="warn">· 자료 미확인(기존 모의고사 수치)</span>':""}</div>
    <div class="row"><button id="nx">다음 문제 ▶</button><button class="ghost" id="retry">다시 풀기</button></div></div>`;
   $("nx").onclick=next; $("retry").onclick=showQ; $("nx").focus(); render();
