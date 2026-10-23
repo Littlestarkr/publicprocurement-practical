@@ -94,6 +94,14 @@ const MSG={4:["🏆 천재이십니다!","완벽에 가깝습니다. 이대로�
  2:["💪 조금만 더 하면 합격이에요!","거의 다 왔습니다. 틀린 부분만 다시 보면 됩니다."],
  1:["🔥 분발하세요!","괜찮아요. 아래 암기문구를 소리 내어 읽고 다시 도전해 보세요."]};
 function visible(){return items.filter(it=>filter==="전체"||it.cat===filter)}
+function perms(a){if(a.length<=1)return [a];const o=[];a.forEach((x,i)=>perms(a.slice(0,i).concat(a.slice(i+1))).forEach(p=>o.push([x].concat(p))));return o}
+function gradeItem(it,ans){
+  if(!it.unordered)return ExamEngine.gradeQuestion(toQ(it),ans);
+  const idx=it.unordered; let best=null;
+  perms(idx.map(i=>ans[i])).forEach(pv=>{const a=ans.slice();idx.forEach((k,n)=>a[k]=pv[n]);
+    const r=ExamEngine.gradeQuestion(toQ(it),a);if(!best||r.score>best.score)best=r});
+  return best;
+}
 function toQ(it){return {no:it.id,type:"short",points:10,parts:it.parts}}
 function render(){
   const total=Object.values(state.scores).reduce((a,b)=>a+b,0), n=Object.keys(state.scores).length;
@@ -120,7 +128,7 @@ function showQ(){
 function submit(it){
   if(answered)return; answered=true;
   const ans=it.parts.map((_,i)=>$("in"+i).value);
-  const r=ExamEngine.gradeQuestion(toQ(it),ans);
+  const r=gradeItem(it,ans);
   state.scores[it.id]=r.score; save();
   const ratio=r.score/10, t=tier(ratio), m=MSG[t];
   document.querySelectorAll("#inputs input").forEach(e=>e.disabled=true);
