@@ -151,7 +151,7 @@
       const m = await loadJson("exams/manifest.json");
       const list = (m.exams || []);
       if (!list.length) { app.innerHTML = '<div class="card notice">등록된 회차가 없습니다.</div>'; return; }
-      app.innerHTML = '<div class="center" style="margin-bottom:16px"><a class="btn secondary" href="?myresults=1">내 결과 보기</a></div>' +
+      app.innerHTML = '<div class="center" style="margin-bottom:16px"><a class="btn secondary" href="?myresults=1">내 결과 보기</a> <a class="btn secondary" href="memo100/">📘 암기 100제</a></div>' +
         '<div class="exam-list">' + list.map(e =>
         `<a class="exam-card" href="?exam=${encodeURIComponent(e.id)}">
            <h3>${esc(e.title)}</h3><p>${esc(e.description || "")}</p><span class="go">응시하기 →</span></a>`).join("") + "</div>" +
