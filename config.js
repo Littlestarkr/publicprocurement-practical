@@ -22,7 +22,7 @@ window.SITE = {
   //  softOneRate: 유사 표현이 1개일 때 인정 비율
   //  auto.*: 채점요소(rubric)가 없는 문항을 모범답안으로 자동 채점할 때의 기준
   grading: {
-    softMany: 2, softManyRate: 0.7, softOneRate: 0.3,
+    softMany: 2, softManyRate: 0.7, softOneRate: 0.3, groupPartRate: 0.4,
     suppFull: 0.5, keyOnlyRate: 0.83,
     auto: { full: 0.5, fullRate: 1.0, mid: 0.3, midRate: 0.8, low: 0.15, lowRate: 0.5 }
   }
