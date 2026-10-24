@@ -19,7 +19,7 @@
   "use strict";
 
   const DEFAULT_GRADING = {
-    softMany: 2, softManyRate: 0.7, softOneRate: 0.3,
+    softMany: 2, softManyRate: 0.7, softOneRate: 0.3, groupPartRate: 0.4,
     suppFull: 0.5, keyOnlyRate: 0.83,
     auto: { full: 0.5, fullRate: 1.0, mid: 0.3, midRate: 0.8, low: 0.15, lowRate: 0.5 }
   };
@@ -189,10 +189,22 @@
           else if (item.seq && Array.isArray(item.s)) {      // 순서 무관 일치 비율
             const found = item.s.filter(grp => grp.some(kw => t.includes(normalize(kw)))).length;
             if (found > 0) { rate = (found / item.s.length) * g.softManyRate; level = "part"; }
-          } else if (item.s && item.s.length) {
-            const n = softHits(t, item.s);
-            if (n >= g.softMany) { rate = g.softManyRate; level = "part"; }
-            else if (n >= 1) { rate = g.softOneRate; level = "part"; }
+          } else {
+            // 설명·방안형(키워드 묶음이 여럿)은 맞는 묶음 비율만큼 부분점수. 숫자가 든 묶음을 놓치면 이 부분점수는 없다.
+            if (!item.seq && item.k && item.k.length > 1) {
+              const miss = item.k.filter(grp => !grp.some(kw => has(t, normalize(kw))));
+              if (!miss.some(grp => grp.some(kw => /\d/.test(kw)))) {
+                const r = ((item.k.length - miss.length) / item.k.length) * (g.groupPartRate || 0);
+                if (r > rate) { rate = r; level = "part"; }
+              }
+            }
+            if (item.s && item.s.length) {
+              const n = softHits(t, item.s);
+              let r = 0;
+              if (n >= g.softMany) r = g.softManyRate;
+              else if (n >= 1) r = g.softOneRate;
+              if (r > rate) { rate = r; level = "part"; }
+            }
           }
         } else {                                             // 키워드 없는 항목: 핵심어 비율로 자동 판정
           const terms = item.terms || extractTerms(item.label);
