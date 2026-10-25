@@ -80,7 +80,7 @@ select{padding:8px;border-radius:8px;border:1px solid var(--line);background:var
  </div>
  <p class="small">※ '자료 미확인' 표시가 붙은 문항은 기존 모의고사 수치로 출처 자료에서 확인되지 않은 항목입니다. 점수는 이 브라우저에만 저장됩니다.</p>
 </div>
-<script src="../engine.js?v=20261025b"></script>
+<script src="../engine.js?v=20261026b"></script>
 <script>
 (function(){
 const KEY="memo100.v1";
@@ -146,7 +146,7 @@ function next(){
   const nx=rest.find(x=>state.scores[x.id]==null)||list[(i+1)%list.length];
   state.cur=nx.id; save(); showQ(); window.scrollTo({top:0,behavior:"smooth"});
 }
-fetch("data.json?v=20261025b").then(r=>r.json()).then(d=>{
+fetch("data.json?v=20261026b").then(r=>r.json()).then(d=>{
   const order=[]; d.items.forEach(it=>{if(!order.includes(it.cat))order.push(it.cat)});
   items=d.items.slice().sort((a,b)=>order.indexOf(a.cat)-order.indexOf(b.cat)||a.id-b.id);
   load(); if(!items.find(x=>x.id===state.cur))state.cur=items[0].id;
