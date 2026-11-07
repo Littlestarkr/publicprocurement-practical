@@ -21,6 +21,9 @@
   header.top h1 { margin: 0 0 6px; font-size: 1.5rem; }
   header.top p { margin: 0; opacity: .85; font-size: .95rem; }
   header.top a.back { color: #fff; opacity: .85; font-size: .88rem; text-decoration: none; display: inline-block; margin-bottom: 8px; }
+  header.top .urlline { margin-top: 12px; display: flex; gap: 8px; align-items: center; background: rgba(255,255,255,.14); border-radius: 8px; padding: 6px 8px; font-size: .78rem; }
+  header.top .urltxt { flex: 1; min-width: 0; word-break: break-all; opacity: .95; user-select: all; }
+  header.top .urlline button { flex: none; border: 0; border-radius: 6px; padding: 4px 10px; font: inherit; font-size: .78rem; cursor: pointer; background: #fff; color: var(--brand); }
   header.top a.back:hover { text-decoration: underline; }
   .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
   .notice { font-size: .92rem; color: var(--muted); }
@@ -118,13 +121,14 @@
     <a class="back hidden" id="backLink" href="./">← 회차 목록</a>
     <h1 id="siteTitle">모의고사</h1>
     <p id="siteSub"></p>
+    <div class="urlline hidden" id="urlLine"><span class="urltxt" id="urlTxt"></span><button type="button" id="urlCopy">주소 복사</button></div>
   </div>
 </header>
 <div id="timerBar" class="timer hidden"></div>
 <main class="wrap" id="app"><div class="card notice">불러오는 중…</div></main>
 
-<script src="config.js?v=20261107i"></script>
-<script src="engine.js?v=20261107i"></script>
-<script src="app.js?v=20261107i"></script>
+<script src="config.js?v=20261107j"></script>
+<script src="engine.js?v=20261107j"></script>
+<script src="app.js?v=20261107j"></script>
 </body>
 </html>

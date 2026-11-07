@@ -17,7 +17,26 @@
     $("#siteSub").textContent = sub || "";
     $("#backLink").classList.toggle("hidden", !showBack);
     document.title = (title || SITE.title || "모의고사");
+    const ul = $("#urlLine");
+    if (ul) {
+      ul.classList.toggle("hidden", !showBack);
+      if (showBack) $("#urlTxt").textContent = location.href.split("#")[0];
+    }
   }
+  (function () {
+    const b = $("#urlCopy");
+    if (!b) return;
+    b.addEventListener("click", function () {
+      const url = location.href.split("#")[0];
+      const done = function () { b.textContent = "복사됨"; setTimeout(function () { b.textContent = "주소 복사"; }, 1500); };
+      const fallback = function () {
+        const r = document.createRange(); r.selectNodeContents($("#urlTxt"));
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        b.textContent = "길게 눌러 복사"; setTimeout(function () { b.textContent = "주소 복사"; }, 2500);
+      };
+      try { navigator.clipboard.writeText(url).then(done, fallback); } catch (e) { fallback(); }
+    });
+  })();
   function showError(msg) {
     app.innerHTML = `<div class="card error">${msg}</div><div class="center"><a class="btn secondary" href="./">회차 목록으로</a></div>`;
   }
