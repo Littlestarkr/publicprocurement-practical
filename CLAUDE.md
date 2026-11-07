@@ -26,6 +26,7 @@
 - 서술 Q1~12, 계산 Q13~14(풀이 50%+정답 50%), 괄호채우기 Q15~16, 단답 Q17~18, 순서 Q19~20.
 - 점검: `node tools/check-exam.js exams/examNN.json` (모범답안 100점·빈 답안 0점이어야 한다).
 - 새 회차: `exams/manifest.json`에 항목 추가, `index.html`·`memo100/index.html`의 캐시 버전 문자열 갱신.
+- 머지 후에는 로컬 작업 브랜치를 삭제하고 `main`만 남긴다(2026-11-07 작가님 지시).
 - 원격 브랜치 삭제는 프록시에서 막혀 있다. Stop hook의 "unpushed commit" 경고는 `git ls-remote --heads origin <branch>`로 확인하면 대개 오탐이다.
 
 ## 사용자 확정 사실
