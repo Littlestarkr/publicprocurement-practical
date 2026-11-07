@@ -11,6 +11,9 @@ window.SITE = {
   // 회차 목록 맨 아래 "관리자에게 문의하기" 메일 주소. 비워 두면 문의 링크가 안 보입니다.
   adminEmail: "happyojh@gmail.com",
 
+  // 문의하기 아래와 매 회차 끝에 표시하는 리틀스타 웹 주소. 비워 두면 안 보입니다.
+  siteUrl: "https://www.littlestar.co.kr",
+
   // 합격/불합격 멘트
   messages: {
     pass: "모의고사 합격을 축하합니다.",
