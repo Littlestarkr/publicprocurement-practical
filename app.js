@@ -115,11 +115,15 @@
         <div class="notice">${esc(String(r.submittedAt).replace("T", " ").slice(0, 16))} · ${r.pass ? "합격" : "불합격"} · 득점률 ${r.percent}%</div></div>`
     ).join("");
   }
+  function siteLinkHtml() {
+    if (!SITE.siteUrl) return "";
+    return `<div style="margin-top:10px"><a href="${esc(SITE.siteUrl)}" target="_blank" rel="noopener">🌐 리틀스타 웹: ${esc(SITE.siteUrl)}</a></div>`;
+  }
   function contactLinkHtml() {
-    if (!SITE.adminEmail) return "";
+    if (!SITE.adminEmail) return siteLinkHtml();
     const subject = encodeURIComponent("[" + (SITE.title || "모의고사") + "] 문의");
     return `<div style="margin-top:10px">
-      <a id="contactLink" href="mailto:${esc(SITE.adminEmail)}?subject=${subject}">📧 관리자에게 문의하기: ${esc(SITE.adminEmail)}</a></div>`;
+      <a id="contactLink" href="mailto:${esc(SITE.adminEmail)}?subject=${subject}">📧 관리자에게 문의하기: ${esc(SITE.adminEmail)}</a></div>${siteLinkHtml()}`;
   }
   /** 네이버 블로그·카카오톡 등 인앱 브라우저는 mailto: 링크가 동작하지 않는 경우가 많아,
    *  그런 환경에서는 주소를 복사해주고 외부 브라우저로 열도록 안내한다. */
@@ -251,8 +255,10 @@
       html += "</div>";
     });
     html += `<div class="center" style="margin-top:24px"><p id="unansweredWarn" class="notice hidden"></p>
-      <button class="btn" id="submitBtn" type="button">답안 제출</button></div>`;
+      <button class="btn" id="submitBtn" type="button">답안 제출</button></div>
+      <footer class="foot">${contactLinkHtml()}</footer>`;
     app.innerHTML = html;
+    wireContactLink();
 
     app.removeEventListener("input", onInput);
     app.removeEventListener("change", saveDraft);
@@ -438,8 +444,10 @@
     });
     html += `<div class="actions"><button class="btn secondary" type="button" id="printBtn">결과 인쇄 / PDF 저장</button>
       <button class="btn secondary" type="button" id="retryBtn">다시 풀기</button>
-      <a class="btn" href="./">다른 회차 선택</a></div>`;
+      <a class="btn" href="./">다른 회차 선택</a></div>
+      <footer class="foot">${contactLinkHtml()}</footer>`;
     app.innerHTML = html;
+    wireContactLink();
     $("#printBtn").addEventListener("click", handlePrint);
     $("#retryBtn").addEventListener("click", () => { submitting = false; renderExam(examId); window.scrollTo({ top: 0 }); });
     wireCopyCodeBtn(getMyCode());
