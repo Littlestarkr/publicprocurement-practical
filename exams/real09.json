@@ -16,7 +16,7 @@
    "title": "구매사양 작성의 SMART 원칙 [서술식]",
    "question": "구매사양서 및 과업지시서 작성 시 적용해야 하는 'SMART 원칙' 5가지를 각각 나열하고 의미를 간략히 서술하시오.",
    "points": 5,
-   "answer": "구매사양은 명확성(Specific: 구체적인 내용 명시), 측정가능성(Measurable: 성과 및 품질의 계량적 측정 가능), 달성가능성(Achievable: 기술적/물리적으로 실현 가능), 현실성(Realistic: 예산 및 시장 상황에 부합), 시간제한성(Time-bound: 명확한 납기 및 이행 기간 설정)을 충족하도록 작성해야 한다.",
+   "answer": "구매사양은 구체성(Specific: 구체적인 내용 명시), 측정가능성(Measurable: 성과 및 품질의 계량적 측정 가능), 달성가능성(Attainable: 기술적·물리적으로 실현 가능), 관련성(Relevant: 사업 목적·필요와의 연관성), 기한성(Time-bound: 명확한 납기 및 이행 기간 설정)을 충족하도록 작성해야 한다.",
    "rubric": [
     {
      "p": 1.0,
@@ -48,9 +48,10 @@
     },
     {
      "p": 1.0,
-     "label": "Achievable(달성가능성): 기술적·물리적으로 실현 가능",
+     "label": "Attainable(달성가능성): 기술적·물리적으로 실현 가능",
      "k": [
       [
+       "attainable",
        "achievable",
        "달성가능"
       ]
@@ -63,16 +64,18 @@
     },
     {
      "p": 1.0,
-     "label": "Realistic(현실성): 예산 및 시장 상황에 부합",
+     "label": "Relevant(관련성): 사업 목적·필요와의 연관성",
      "k": [
       [
-       "realistic",
-       "현실성"
+       "relevant",
+       "관련",
+       "연관"
       ]
      ],
      "s": [
-      "예산",
-      "시장"
+      "사업",
+      "목적",
+      "필요"
      ]
     },
     {
@@ -82,7 +85,8 @@
       [
        "timebound",
        "time-bound",
-       "시간제한"
+       "시간제한",
+       "기한"
       ]
      ],
      "s": [
@@ -91,7 +95,7 @@
      ]
     }
    ],
-   "explanation": "SMART 원칙의 5가지 영문 단어와 한글 의미를 세트로 암기하세요.",
+   "explanation": "SMART 원칙은 Specific(구체성)·Measurable(측정가능성)·Attainable(달성가능성)·Relevant(관련성)·Time-bound(기한성)입니다. (핵심 용어 250선 기준)",
    "section": "Ⅰ. 서술식 (Q01 ~ Q12)"
   },
   {
