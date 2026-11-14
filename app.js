@@ -213,6 +213,7 @@
 
     const multi = exam.questions.some(q => q.type === "choice");
     let html = `<div class="card notice"><b>응시 안내</b><ul>
+      ${exam.notice ? `<li><b>${esc(exam.notice)}</b></li>` : ""}
       <li>각 문항에 답안을 작성한 뒤 맨 아래 <b>[답안 제출]</b>을 누르면 자동 채점됩니다.</li>
       <li>서술형은 모범답안의 <b>핵심 채점요소</b> 포함 여부로 채점하며, 정확한 용어가 없어도 <b>같은 취지의 표현</b>이 있으면 부분점수를 인정합니다.</li>
       <li>단답형은 소문항별로 채점합니다. 숫자는 단위까지 쓰는 것을 권장합니다(예: 3,000만 원, 0.05%).</li>
